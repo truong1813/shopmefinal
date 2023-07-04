@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head th:replace="fragments :: page_head('Todos - admin','none')"/>
+<body>
+	<div class="container-fluid">
+		<div th:replace="navigation::menu"></div>
+		&nbsp;
+		
+		
+		<div th:if="${message !=null && keyword !=null}" class="alert alert-success text-center">
+			[[${message}]]
+		</div>
+		
+		<div class="row justify-content-center">
+        	<form th:action="@{/todos/page/pending/1}" class="form-inline" id="formSearch">
+            <input type="hidden" name="sortField" th:value="${sortField}"/>
+            <input type="hidden" name="sortDir" th:value="${sortDir}"/>
+            
+            <div class="form-row align-items-center">
+               <div class="col-auto">
+                    <label  for="fromDate">Tìm Kiếm Theo Ngày:</label>
+                </div>
+               
+                <div class="col-auto mx-3">
+                    <select class="form-control" name="keyword" th:value="${keyword}" required>
+                        <option value="created">Ngày Bắt Đầu</option>
+                        <option value="completed">Ngày Hoàn Thành</option>
+                    </select>
+                </div>
+                
+				<div class="col-auto">
+                    <label  for="fromDate">Từ Ngày:</label>
+                </div>
+                <div class="col-auto mx-3">
+                    <input type="date" name="fromDate" class="form-control" id="fromDate" th:value="${fromDate}" required/>
+                </div>
+				<div class="col-auto">
+                    <label  for="fromDate">Đến Ngày:</label>
+                </div>
+                <div class="col-auto mx-3">
+                    <input type="date" name="toDate" class="form-control" id="toDate" th:value="${toDate}"required/>
+                </div>
+
+                <div class="col-auto mx-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+ 
+    <div class="row justify-content-center mt-3">
+        <div class="col-auto">
+            <p id="createMessage" class="icon-red"></p>
+        </div>
+    </div>	
+		<div class="full-details" >
+			<table class="table table-bordered table-striped table-hover table-responsive-xl">
+				<thead class="thead-dark">
+					<tr>
+						<th>Id</th>
+					
+						<th>
+							<a class="text-white" th:href="@{'/'+${modelURL} + '/page/'+ ${currentPage} + '?sortField=name' + '&sortDir='+ ${reverseSortDir} + ${keyword !=null? '&keyword='+ keyword :''}}">Todos Name</a>
+							<span 
+		 						th:class="${reverseSortDir =='desc'? 'fas fa-sort-up':'fas fa-sort-down'}">
+							</span>
+						</th>
+						<th>Description</th>
+						<th>Created Date</th>
+						<th>Completed Date</th>
+						<th>Status</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="todo :${listTodos}">
+						<td class="hideable-column">[[${todo.id}]]</td>
+						
+						<td>
+    						<span th:text="${todo.name}" th:class="${todo.parent == null} ? 'text-danger font-weight-bold' : ''"></span>
+						</td>
+						<td>[[${todo.shortDescription}]]</td>
+						<th:block th:if="${todo.parent!=null}">
+						<td>[[${todo.createDate}]]</td>
+						<td>[[${todo.completedDate}]]</td>
+						<td>[[${todo.status}]]</td>
+						 </th:block> 	
+						<th:block th:if="${todo.parent==null}">
+						<td></td>
+						<td></td>
+						<td></td>
+						 </th:block>						
+						
+						<td>
+							
+							
+							<a class="fa-solid fa-pen-to-square fa-2x icon-green" th:href="@{'/todos/edit/' +${todo.id}}" title="Edit this todo"></a>
+							&nbsp;
+							<th:block th:if="${todo.hasChildren ==false}">
+							
+								<a  class="fa-solid fa-trash fa-2x icon-dark link-delete" 
+									th:href="@{'/todos/delete/' + ${todo.id}}"
+									th:todoId="${todo.id}"
+									title="Delete this Todo">
+								</a>
+							</th:block>
+												
+						</td>
+						
+					</tr>
+					
+				</tbody>
+			</table>
+		</div>
+		
+	
+	<div class="text-center m-1" th:if="${totalItems>0}">
+		<span>Show Todos # [[${startCount}]] to [[${endCount}]] of [[${totalItems}]]</span>
+	</div>
+	<div class="text-center m-1" th:unless="${totalItems>0}">
+		<span>Not Todo found</span>
+	</div>
+	<div th:if="${totalPages >0}">
+		<nav aria-label="Page navigation example">
+  			<ul class="pagination justify-content-center flex-wrap">
+  				<li th:class="${currentPage >1 ? 'page-item':'page-item disabled'}" >
+	    			<a th:replace="fragments ::page_link_date(1,'First','pending')"></a>
+	    		</li>
+	    		<li th:class="${currentPage > 1 ? 'page-item':'page-item disabled'}" >
+	    			<a th:replace="fragments ::page_link_date(${currentPage-1},'Previous','Pending')"></a>
+	    		</li>
+	    		<li th:class="${currentPage !=i ?'page-item':'page-item active'}" 
+	    			th:each="i: ${#numbers.sequence(1,totalPages)}">
+	    			<a th:replace="fragments ::page_link_date(${i},${i},'pending')"></a>
+	    		</li>
+	    		
+	    		<li th:class="${currentPage<totalPages ? 'page-item':'page-item disabled'}" >
+	    			<a th:replace="fragments ::page_link_date(${currentPage+1},'Next','pending')"></a>
+	    		</li>
+	    		<li th:class="${currentPage< totalPages ? 'page-item':'page-item disabled'}">
+	    			<a th:replace="fragments ::page_link_date(${totalPages},'Last','pending')"></a>
+	    		</li>
+  			</ul>
+		</nav>
+	</div>
+	
+	<div class ="modal fade text-center" id="confirmModal"> 
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="modalTitle">Delete Confirmation</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<span id="confirmText"></span>
+					</div>
+					<div class="modal-footer">
+						<a class="btn btn-success" href="" id="yesButton" >Yes</a>
+						<button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div th:replace="fragments ::footer"></div>
+	</div>
+	
+	<script type="text/javascript" th:src="@{/js/manage_todo_form.js}"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head th:replace="fragments :: page_head('New Todo','none')"/>
+<body>
+	<div class="container-fluid">
+		<div th:replace="navigation::menu"></div>
+		<div>
+			<h2 class="text-center">[[${pageTitle}]]</h2>
+		</div>
+		<form th:action="@{/todos/save}" method="post" th:object="${todo}" style="max-width: 700px; margin:0 auto" id="formInput"
+		>
+		
+		 <input type="hidden" th:field="*{id}" id="id" />
+			<div class="border border-secondery rounded p-3">
+				<div class="form-group row">
+					<label class="col-sm-4 col-form-label">Tên: (hoặc Nhóm):</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" th:field="*{name}" required minlength="3" maxlength="125" />
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-4 col-form-label">Mô Tả:</label>
+					<div class="col-sm-8">
+						
+						<textarea rows="5" class= "form-control" th:field="*{description}" required></textarea>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-4 col-form-label">Ngày Bắt Đầu :</label>
+					<div class="col-sm-8">
+						<input type="date" name="createDate" class="form-control" th:field="*{createDate}"  id = "createDate" required  />
+						<p id="createMessage" class="icon-red"></p>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-4 col-form-label">Ngày Hoàn Thành :</label>
+					<div class="col-sm-8">
+						<input type="date" name="completedDate" class="form-control" th:field="*{completedDate}"  id="completedDate" required  />
+						<p id="completedMessage" class="icon-red"></p>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-4 col-form-label">Chọn Nhóm:</label>
+					<div class="col-sm-8">
+						<select class="form-control" th:field="*{parent}"  id="groupId">
+							<option value="0">[No Group]</option>
+							<th:block th:each="todo : ${listRoot}">
+							<option th:value ="${todo.id}">[[${todo.name}]]</option>
+							</th:block>
+						</select>
+					</div>
+				</div>
+				
+		
+					<div class="form-group row">
+					<label class="col-sm-4 col-form-label">Status:</label>
+					<div class="col-sm-8">
+						<select class="form-control" th:field="*{status}">
+								<option value="Pending">[Pending]</option>
+								<option value="Completed" >[Completed]</option>
+								
+						</select>
+					</div>	
+				</div>
+				
+				
+
+									
+				<div class="text-center">
+					<input type="submit" value="Save" class="btn btn-primary m-3"  />
+					<input type="Button" value="Cancel" class="btn btn-secondary" id="buttonCancel" />
+				</div>
+			</div>
+		</form>
+		<div class ="modal fade text-center" id="modalDialog"> 
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="modalTitle">Warning</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<span id="modalBody"></span>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div th:replace="fragments ::footer"></div>
+	</div>
+	<script type="text/javascript">
+		modulURL="[[@{/Todo}]]";
+		$(document).ready(function(){
+		$("#buttonCancel").on("click",function(){
+			window.location="[[@{/todos}]]";
+			});
+		$("#createDate").change(function() {
+		validateDates();
+			});
+
+		  //Gắn hàm xử lý sự kiện cho trường completedDate
+		$("#completedDate").change(function() {
+		   validateDates();
+		});
+		
+		$("#formInput").attr("onsubmit", "return checkUnique(this);");
+		});	  
+	function checkUnique(form){
+		
+			url="[[@{/todos/check_group_name_unique}]]";
+			todoId= $("#id").val();
+			groupId = $("#groupId option:selected").val();
+			todoName = $("#name").val();
+			
+			csrfValue= $("input[name='_csrf']").val();
+			params= {name: todoName,todoId: todoId,groupId: groupId, _csrf: csrfValue};
+			
+			$.post(url,params,function(response){
+				
+				if(response==="OK"){
+					form.submit();
+				}else if(response==="DuplicatedParent"){
+					showModalDialog("Warning","Tên Nhóm: " + todoName + " Đã Tồn Tại ");
+					
+				}else if(response==="DuplicatedTodo"){
+					showModalDialog("Warning","Tên Công Việc: "+ todoName + " Đã Tồn Tại Trong Nhóm");
+				}else{
+					showModalDialog("Error","Unknown response from server");
+				};
+				
+				}).fail(function(){
+					showModalDialog("Error","Could not connect to the server");
+				});
+			return false;
+		}
+		
+		function showModalDialog(title,message){
+			$("#modalTitle").text(title);
+			$("#modalBody").text(message);
+			$("#modalDialog").modal();
+		}
+		function validateDates() {
+		    var createDate = new Date($("#createDate").val());
+		    var completedDate = new Date($("#completedDate").val());
+
+		    if (createDate > completedDate) {
+		      $("#createMessage").text("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày hoàn thành.");
+		      $("#formInput").attr("onsubmit", "return false;");
+		    } else {
+		      $("#createMessage").text("");
+		     
+		      $("#formInput").attr("onsubmit", "return checkUnique(this);");
+		     
+		    }
+		  }
+	
+</script>
+
+</body>
+
+</html>
