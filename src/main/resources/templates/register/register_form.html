@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head th:replace="fragments :: page_head('register','none')"/>
+<body>
+<div class="container-fluid">
+	<div class="text-center">
+		<h2>User Registration</h2>
+	</div>
+	<div>&nbsp;</div>
+	<form th:action="@{/create_customer}" method="post" th:object="${customer}"
+	 style="max-width: 600px; margin: 0 auto" onsubmit="return checkUnique(this);">
+	 <input type="hidden" th:field="*{id}"/>
+	<div class="border border-secondary rounded p-3">
+		<div class="form-group row">
+			<label class="col-sm-4 col-form-label">Name:</label>
+			<div class="col-sm-8">
+				<input type="text" th:field="*{name}" class="form-control" required="required"
+				maxlength="45" minlength="2" />
+			</div>
+		</div>
+		
+		<div class="form-group row">
+			<label class="col-sm-4 col-form-label">E-Mail:</label>
+			<div class="col-sm-8">
+				<input type="email" th:field="*{email}" class="form-control" required="required"
+				maxlength="45" minlength="8" />
+			</div>
+		</div>
+		
+		<div class="form-group row">
+			<label class="col-sm-4 col-form-label">Password:</label>
+			<div class="col-sm-8">
+				<input type="password" th:field="*{password}" class="form-control" required="required"
+				maxlength="15" minlength="8" 
+				oninput="checkMatchPassword(document.getElementById('confirmPassword'))"/>
+			</div>
+		</div>
+		
+		<div class="form-group row">
+			<label class="col-sm-4 col-form-label">Re-type Password:</label>
+			<div class="col-sm-8">
+				<input type="password" id="confirmPassword" class="form-control" required="required"
+				maxlength="15" minlength="8" oninput="checkMatchPassword(this)"/>
+			</div>
+		</div>
+		
+		
+		<div class="text-center">
+			<input type="submit" value="Create Account" class="btn btn-primary">
+		</div>
+	</div>
+	
+	</form>
+	<div>&nbsp;</div>
+	
+	<div class ="modal fade text-center" id="modalDialog"> 
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="modalTitle">Warning</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<span id="modalBody"></span>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+</div>
+
+<script type="text/javascript">
+contextPath="[[@{/}]]"
+
+	function checkUnique(form){
+		url=contextPath + "customers/check_unique";
+		
+		customerId= $("#id").val();
+		customerEmail = $("#email").val();
+		csrfValue= $("input[name='_csrf']").val();
+		params= {id: customerId, email: customerEmail, _csrf: csrfValue};
+		
+		$.post(url,params,function(response){
+			alert(response);
+			if(response=="OK"){
+				form.submit();
+			}else if(response=="Duplicated"){
+				showModalDialog("Warning","There is another customer having the email " + customerEmail);
+			}else {
+				showModalDialog("Error","Unknown response from server");
+				};
+			
+			}).fail(function(){
+				showModalDialog("Error","Could not connect to the server");
+			});
+		
+		return false;
+	}
+function checkMatchPassword(confirmPassword){
+	if(confirmPassword.value != $("#password").val()){
+		confirmPassword.setCustomValidity("Password do not match");
+	}else{
+		confirmPassword.setCustomValidity("");
+	}
+}
+function showModalDialog(title,message){
+	$("#modalTitle").text(title);
+	$("#modalBody").text(message);
+	$("#modalDialog").modal();
+}
+	
+</script>
+</body>
+</html>

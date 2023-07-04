@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head th:replace="fragments :: page_head('Home - Todo','none')"/>
+<body>
+    <div class="container-fluid">
+        
+        <div th:replace="navigation::menu"></div>
+        <div class="mt-2">
+        <div class="row">
+          <div class="col-md-4 ">
+            <div class="stat-cards">
+              <article class="stat-cards-item ">
+                <div class="stat-cards-icon primary">
+                  <i data-feather="bar-chart-2" aria-hidden="true"></i>
+                </div>
+                <div class="stat-cards-info">
+                  <p class="stat-cards-info__num" id="completed">[[${listCompleted}]]</p>
+                  <p class="stat-cards-info__title">Công Việc Đã Hoàn Thành</p>
+                  
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-cards">
+              <article class="stat-cards-item">
+                <div class="stat-cards-icon primary">
+                  <i data-feather="bar-chart-2" aria-hidden="true"></i>
+                </div>
+                <div class="stat-cards-info">
+                  <p class="stat-cards-info__num" id="pending">[[${listPending}]]</p>
+                  <p class="stat-cards-info__title">Công Việc Chưa Hoàn Thành</p>
+                  
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-cards">
+              <article class="stat-cards-item">
+                <div class="stat-cards-icon primary">
+                  <i data-feather="bar-chart-2" aria-hidden="true"></i>
+                </div>
+                <div class="stat-cards-info">
+                  <p class="stat-cards-info__num">[[${listDeadLine}]]</p>
+                  <p class="stat-cards-info__title">Công Việc Quá Hạn</p>
+                  
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="chart">
+              <canvas id="pieChart" aria-label="Site statistics" role="img"></canvas>
+         </div>
+       
+    </div>
+   <div th:replace="fragments ::footer"></div>
+    <script type="text/javascript">
+    modulURL="[[@{/}]]";
+	$(document).ready(function(){
+		
+		createPieChart();
+	});
+ // Tạo biểu đồ hình tròn từ dữ liệu Todo
+    function createPieChart() {
+      // Đếm số lượng Todo theo trạng thái
+      var pending = document.getElementById('pending');
+      var completed = document.getElementById('completed');
+      var pendingCount = parseInt(pending.textContent);
+      var completedCount = parseInt(completed.textContent);
+      //var completedCount = todos.filter(todo => todo.status === "Completed").length;
+
+      // Tạo biểu đồ hình tròn
+      var ctx = document.getElementById("pieChart").getContext("2d");
+      var pieChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Completed","Pending"],
+          datasets: [{
+            data: [completedCount,pendingCount],
+            backgroundColor: ["#3D9970", "#36A2EB"],
+            hoverBackgroundColor: ["#3D9970", "#36A2EB"]
+          }]
+        }
+      });
+    }
+
+    // Gửi yêu cầu AJAX để lấy danh sách Todo từ API
+    //function getTodos() {
+     // var xhr = new XMLHttpRequest();
+     /// xhr.open("GET", modulURL+ "todos/list_todos", true);//
+     // xhr.setRequestHeader("Content-type", "application/json");
+     // xhr.onreadystatechange = function() {
+       // if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+        //  var todos = JSON.parse(xhr.responseText);
+         // createPieChart(todos);
+       //}
+     // };
+      //xhr.send();
+    
+    // Gọi hàm để lấy danh sách Todo khi trang được tải
+    </script>
+    
+</body>
+</html>

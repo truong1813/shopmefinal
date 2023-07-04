@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="page_head(title,remove)" th:remove=${remove}>
+	
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,Mininum=1.0">
+	
+	<title>[[${title}]]</title>
+	
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+	<link rel="stylesheet" type="text/css" th:href="@{/css/all.css}">
+	<link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+	<script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+	<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/common.js}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+
+<body>
+	
+	<th th:fragment="column_link(fieldName,columnName,removeTag)" th:remove="${removeTag}">
+		<a class="text-white"
+			th:href="@{'/'+${modelURL} + '/page/'+ ${currentPage} + '?sortField=' +${fieldName} + '&sortDir=' +${sortField !=fieldName? sortDir:reverseSortDir} + ${keyword !=null? '&keyword'+keyword :''} +${categoryId !=null ? '&categoryId='+categoryId : ''}}">
+			[[${columnName}]]
+		</a>
+		<span th:if="${sortField==fieldName}"
+		 	th:class="${sortDir =='asc'? 'fas fa-sort-up':'fas fa-sort-down'}">
+		</span>
+	</th>
+	
+	<a th:fragment="page_link(pageNum,label)"
+	 class="page-link" 
+	 th:href="@{'/'+${modelURL} + '/page/'+${pageNum} +'?sortField=' + ${sortField} + '&sortDir=' + ${sortDir} +${keyword !=null ? '&keyword='+ keyword :''} +${stastus !=null ? '&status='+status : ''}+${startDate !=null ? '&startDate'+startDate:''}+${endDate !=null ? '&endDate'+endDate:''}}">
+		[[${label}]]
+	</a>
+	
+	<a th:fragment="page_link_date(pageNum,label,status)"
+	 class="page-link" 
+	 th:href="@{'/'+${modelURL} + '/page/'+${status}+'/' +${pageNum} +'?sortField=' + ${sortField} + '&sortDir=' + ${sortDir} +${keyword !=null ? '&keyword='+ keyword :''} +${stastus !=null ? '&status='+status : ''}+${fromDate !=null ? '&fromDate='+fromDate:''}+${toDate !=null ? '&toDate='+toDate:''}}">
+		[[${label}]]
+	</a>
+	
+	<div th:fragment="footer" class="text-center m-3">
+		<p>Todo Control Panel Copyright &copy; TodoApp <p>
+	</div>
+</body>
+</html>
